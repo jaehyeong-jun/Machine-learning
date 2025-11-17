@@ -1,61 +1,77 @@
-## 📌 프로젝트 개요
+📌 얼굴(Face) vs 동물(Animal) 이미지 분류기
 
-이 프로젝트는 KNN 알고리즘을 사용하여 닥스훈트(Dachshund)와 사모예드(Samoyed)의신체적 특성(길이, 키)을 기반으로 품종을 분류하는 머신러닝 모델을 구현한 것입니다.
+Convolutional Neural Network(CNN) 기반 이진 이미지 분류 모델 개발
 
-### 🧩 사용 기술
+📁 프로젝트 개요
 
-| 언어 | Python(pycharm) |
-| --- | --- |
-| 주요 라이브러리 | Numpy, Matplotlib, scikit-learn |
-| 모델 | KNN(KNeighborsClassifier) |
-| 데이터 처리 | numpy.column_stack, numpy.concatenate |
-| 시각화 | matplotlib.pyplot.scatter |
+사람 얼굴 이미지와 동물 이미지를 구분하는 CNN 모델을 직접 구현 및 학습시키는 프로젝트입니다.
+OpenCV로 이미지 전처리 → Keras/TensorFlow로 CNN 모델 구성 → 모델 학습 및 테스트 흐름으로 진행하였습니다.
 
-### 1️⃣ 데이터 준비 및 시각화
+이 프로젝트는 이미지 데이터 로딩 → 전처리 → 모델 구성 → 학습 → 평가 → 예측 전체 파이프라인을 직접 구현한 점에서 의미가 큽니다.
 
-| 품종 | 데이터 포인트 수 | 특징 |
-| --- | --- | --- |
-| 닥스훈트(Dachshound) | 8 | 몸길이, 키 |
-| 사모예드(Samoyed) | 8 | 몸길이, 키 |
+🎯 목표
 
-## 두 폼종의 데이터를 산점도로 표현하여 분포를 확인
+얼굴과 동물 이미지를 높은 정확도로 분류하는 CNN 모델 제작
 
-### 2️⃣ 새로운 강아지지 데이터 추가
+이미지 전처리(BGR→RGB, Resize), 정규화 이해
 
+입력/학습용 데이터 array 형태 구성 경험
 
-- Blue: 사모예드,  Cyan: 닥스훈트, Red: 새로운 강아지
-    
+CNN 구조 설계 및 overfitting 방지 실습
 
-### 3️⃣ 데이터 구성 및 라벨링
+모델 저장 및 로드 후 예측
 
-각 개체의 ‘길이’와 ‘높이’를 결합해 2차원 형태의 데이터로 만들고, 닥스훈트(0), 사모예드(1)로 라벨을 부여함.
-두 종의 데이터를 하나로 합쳐 전체 개체의 특성과 정답 정보를 완성시키고, 이렇게 구성된 데이터는 
-머신 러닝 모델이 학습할 수 있는 입력(feature)과 정답(label) 역할을 함.
-    
-
-### 4️⃣ KNN 모델 학습 및 예측
-
-두 종의 데이터를 기반으로 KNN 알고리즘을 이용해 분류 모델을 학습했습니다. scikit-learn 라이브러리의 
-KNeighborsClassifier를 사용하였으며 n_neighbors값을 3으로 설정해, 새로운 개의 데이터를 기준으로
-가장 가까운 3개의 개체를 찾아 그 중 더 많은 특징(0이 나옴)이 무엇인지 예측하게 했습니다.
+🛠 사용 기술
+분야	사용 기술
+언어	Python
+딥러닝	TensorFlow(Keras), CNN(Conv → Pool → Dense)
+이미지 처리	OpenCV(cv2)
+데이터 처리	NumPy
+시각화	Matplotlib
 
 
-새로운 강아지의 데이터는 “닥스훈트”종으로 예측.
+이미지 전처리
+image = cv2.imread(file)
+image = cv2.resize(image, (64, 64))
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-## 5️⃣ 데이터 증강
+정규화: X_train = X_train / 255.0
 
-실제 데이터가 8개씩으로 너무 적기 때문에, 각 품종의 평균(mean)과 표준편차(std)를 기반으로 정규분포를 이용한 난수 생성으로 200개의 가상 데이터를 추가했습니다.
+CNN 모델 구조
+model.add(Conv2D(128, (3, 3), activation="relu"))
+model.add(MaxPooling2D())
+model.add(Conv2D(64, (3, 3), activation="relu"))
+model.add(MaxPooling2D())
+model.add(Conv2D(32, (3, 3), activation="relu"))
+model.add(MaxPooling2D())
+model.add(Conv2D(32, (3, 3), activation="relu"))
+model.add(MaxPooling2D())
+
+model.add(Flatten())
+model.add(Dense(64, activation="relu"))
+model.add(Dense(64, activation="relu"))
+model.add(Dense(32, activation="relu"))
+model.add(Dense(2, activation="softmax"))
 
 
-### 💡 참고 (
+특징
 
-np.random.normal(μ, σ, N)은 NumPy 라이브러리에 포함된 정규분포 난수 생성 함수이다.
+Conv 층에서 점점 필터 수 감소 → 파라미터 수 최적화
 
-μ: 정규분포의 평균, σ: 정규분표의 표준편차(±7로 흩어진 데이터), N: 생성 갯수
+4단계 Convolution + Pooling
 
-### 6️⃣ 증강 데이터로 모델 재학습 및 평가
+Dense Layer 두껍게 구성 → 학습 능력 강화
 
-3️⃣번과 같이 데이터 라벨링 후 데이터를 훈련용(80%)과 테스트용(20%)으로 분리한 뒤, KNN 알고리즘으로 학습시키고, 가장 가까운 5개를 비교해 정확도를 확인합니다. 
-(모델이 데이터를 외워버리는”과적합을 막기위해 분리)
+출력층 softmax: [사람, 동물]
 
-데이터의 품종을 예측하고 예측값과 실제갑싱 얼마나 일치하는지를 백분율로 평가합니다.
+학습 결과
+history = model.fit(X_train, y, epochs=200)
+model.save("FACE_DETECTOR.keras")
+
+model.evaluate(X_train, y)
+
+
+훈련 셋이 30장으로 매우 적음에도 불구하고
+소규모 데이터 기준에서는 높은 정확도 확보됨.
+
+(데이터가 적기 때문에 일반화 성능은 과제로 남음 → 개선 가능!)
